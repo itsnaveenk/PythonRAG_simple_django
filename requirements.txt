@@ -3,4 +3,7 @@ django-cors-headers
 google-generativeai
 chromadb
 pypdf
+python-docx
+textract
+python-pptx
 python-dotenv

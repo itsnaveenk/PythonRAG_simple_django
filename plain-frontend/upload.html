@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Documents - TextAssist</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Navbar -->
+        <header class="navbar">
+            <div class="container">
+                <a href="index.html" class="logo">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                        <polyline points="10 9 9 9 8 9"></polyline>
+                    </svg>
+                    <span>TextAssist</span>
+                </a>
+                <nav class="nav-links">
+                    <a href="index.html" class="nav-link">Home</a>
+                    <a href="upload.html" class="nav-link active">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Upload
+                    </a>
+                    <a href="query.html" class="nav-link">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1-2 2z"></path>
+                        </svg>
+                        Query
+                    </a>
+                </nav>
+                <div class="theme-toggle">
+                    <button id="theme-toggle-btn" aria-label="Toggle Theme">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon sun-icon">
+                            <circle cx="12" cy="12" r="5"></circle>
+                            <line x1="12" y1="1" x2="12" y2="3"></line>
+                            <line x1="12" y1="21" x2="12" y2="23"></line>
+                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                            <line x1="1" y1="12" x2="3" y2="12"></line>
+                            <line x1="21" y1="12" x2="23" y2="12"></line>
+                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                        </svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon moon-icon">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                        </svg>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="mobile-menu-btn">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+        </header>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="mobile-menu">
+            <div class="mobile-menu-container">
+                <a href="index.html" class="mobile-nav-link">Home</a>
+                <a href="upload.html" class="mobile-nav-link active">Upload</a>
+                <a href="query.html" class="mobile-nav-link">Query</a>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <main>
+            <section class="upload-section">
+                <div class="animated-gradient" id="upload-gradient"></div>
+                <div class="container">
+                    <div class="upload-content">
+                        <div class="section-header">
+                            <h1 class="section-title">Upload Documents</h1>
+                            <p class="section-description">
+                                Upload your documents for analysis and querying. Supported formats include PDF, DOCX, TXT, PPTX, and more.
+                            </p>
+                        </div>
+
+                        <div class="card upload-card animate-in">
+                            <div class="card-header">
+                                <h2 class="card-title">Document Upload</h2>
+                                <p class="card-subtitle">Select a file to upload and process</p>
+                            </div>
+                            <div class="card-body">
+                                <label id="upload-dropzone" class="upload-dropzone">
+                                    <input type="file" id="file-upload" accept=".pdf,.docx,.txt,.pptx" class="hidden" multiple>
+                                    <div class="upload-icon-container">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="upload-icon">
+                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                            <polyline points="17 8 12 3 7 8"></polyline>
+                                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                                        </svg>
+                                    </div>
+                                    <div class="upload-text">
+                                        <p id="upload-filename" class="upload-filename">Drag and drop or click to upload</p>
+                                        <p id="upload-filesize" class="upload-filesize">PDF, DOCX, TXT, PPTX (Max 50MB)</p>
+                                    </div>
+                                </label>
+
+                                <div id="staged-files-container" class="staged-files-container hidden">
+                                    <h3 class="staged-files-title">Selected Files:</h3>
+                                    <ul id="staged-files-list" class="staged-files-list">
+                                        <!-- Staged files will be listed here -->
+                                    </ul>
+                                </div>
+
+                                <div id="upload-progress-container" class="upload-progress-container hidden">
+                                    <div class="upload-progress-header">
+                                        <span class="upload-progress-label">Upload Progress</span>
+                                        <span id="upload-progress-percentage" class="upload-progress-percentage">0%</span>
+                                    </div>
+                                    <div class="progress-bar-container">
+                                        <div id="upload-progress-bar" class="progress-bar" style="width: 0%"></div>
+                                    </div>
+                                    <div id="upload-status" class="upload-status"></div>
+                                </div>
+                            </div>
+                            <div class="card-footer">
+                                
+                                <button id="upload-btn" class="btn btn-primary btn-full" disabled>
+                                    <span id="upload-btn-text">Upload Document</span>
+                                    <svg id="upload-btn-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                                        <polyline points="17 8 12 3 7 8"></polyline>
+                                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                                    </svg>
+                                    <svg id="upload-btn-loader" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon loader hidden">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <path d="M12 6v6l4 2"></path>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="uploaded-files-card" class="card uploaded-files-card animate-in delay-150 hidden">
+                            <div class="card-header">
+                                <h2 class="card-title">Uploaded Documents</h2>
+                                <p class="card-subtitle">Your recently uploaded documents</p>
+                            </div>
+                            <div class="card-body">
+                                <ul id="uploaded-files-list" class="uploaded-files-list">
+                                    <!-- Uploaded files will be added here dynamically -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <line x1="16" y1="13" x2="8" y2="13"></line>
+                            <line x1="16" y1="17" x2="8" y2="17"></line>
+                            <polyline points="10 9 9 9 8 9"></polyline>
+                        </svg>
+                        <p class="footer-copyright">© <span id="current-year"></span> TextAssist. All rights reserved.</p>
+                    </div>
+                    <nav class="footer-links">
+                        <a href="#" class="footer-link">Terms</a>
+                        <a href="#" class="footer-link">Privacy</a>
+                        <a href="#" class="footer-link">Documentation</a>
+                    </nav>
+                </div>
+            </div>
+        </footer>
+
+        <!-- Toast Container -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <script src="js/main.js"></script>
+    <script src="js/upload.js"></script>
+</body>
+</html>
