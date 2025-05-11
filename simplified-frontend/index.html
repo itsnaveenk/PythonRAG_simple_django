@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TextAssist - Simplified</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-container">
+        <header>
+            <h1>TextAssist</h1>
+        </header>
+
+        <main>
+            <section id="upload-section">
+                <h2>Upload Documents</h2>
+                <div class="upload-area">
+                    <input type="file" id="file-upload" multiple accept=".pdf,.docx,.txt,.pptx">
+                    <label for="file-upload" class="file-upload-label">Click or Drag & Drop Files</label>
+                </div>
+                <div id="staged-files-container" class="hidden">
+                    <h3>Selected Files:</h3>
+                    <ul id="staged-files-list"></ul>
+                </div>
+                <button id="upload-btn" disabled>Upload Files</button>
+                <div id="upload-progress-container" class="hidden">
+                    <div class="progress-bar-container">
+                        <div id="upload-progress-bar" style="width: 0%;"></div>
+                    </div>
+                    <span id="upload-progress-percentage">0%</span>
+                </div>
+                <div id="upload-status"></div>
+            </section>
+
+            <hr class="section-divider">
+
+            <section id="query-section">
+                <h2>Query Documents</h2>
+                <div class="query-flex-container">
+                    <aside id="documents-sidebar">
+                        <h3>Available Documents</h3>
+                        <div id="documents-loading" class="hidden">Loading...</div>
+                        <ul id="documents-list"></ul>
+                        <p id="selected-doc-status">Select documents to query, or query all.</p>
+                    </aside>
+
+                    <div id="chat-area">
+                        <div id="chat-messages">
+                            <div id="empty-chat">Select documents and ask a question.</div>
+                            <!-- Messages will be appended here -->
+                        </div>
+                        <form id="query-form">
+                            <textarea id="query-input" placeholder="Ask a question..." rows="1"></textarea>
+                            <div class="query-controls">
+                                <button id="send-btn" type="submit" disabled>Send</button>
+                                <button id="voice-toggle-btn" type="button" title="Toggle Voice Input">🎤</button>
+                            </div>
+                        </form>
+                         <button id="clear-chat-btn" type="button">Clear Chat</button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>© <span id="current-year">2025</span> TextAssist. All rights reserved.</p>
+        </footer>
+
+        <!-- Toast Container for notifications -->
+        <div id="toast-container"></div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
