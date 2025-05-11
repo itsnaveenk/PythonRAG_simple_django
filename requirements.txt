@@ -7,3 +7,4 @@ python-docx
 textract==1.6.3
 python-pptx
 python-dotenv
+sentence-transformers
