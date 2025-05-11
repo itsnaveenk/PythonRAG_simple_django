@@ -483,6 +483,7 @@ Follow these steps to set up and run the TextAssist project on your local machin
 1. Install the required Python packages:
    ```bash
    pip install -r requirements.txt
+   pip install --force-reinstall six
    ```
 
 ### 4. Configure Environment Variables
