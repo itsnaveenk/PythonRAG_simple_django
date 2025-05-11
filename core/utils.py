@@ -8,6 +8,18 @@ import docx
 import textract
 import uuid
 from pptx import Presentation
+from sentence_transformers import SentenceTransformer  # Added import for local embeddings
+
+# Initialize the embedding model
+_embedding_model = None
+
+def get_embedding_model():
+    """Get or initialize the embedding model"""
+    global _embedding_model
+    if _embedding_model is None:
+        # Using a lightweight model - you can replace with others like 'all-mpnet-base-v2' for better quality
+        _embedding_model = SentenceTransformer('all-MiniLM-L6-v2')
+    return _embedding_model
 
 def extract_text_from_pdf(file_path):
     reader = PdfReader(file_path)
@@ -82,23 +94,37 @@ def chunk_text(text, chunk_size=1000, overlap=100):
     return chunks
 
 def get_embeddings(text_chunks):
-    result = genai.embed_content(
-        model="models/embedding-001",
-        content=text_chunks,
-        task_type="retrieval_document"
-    )
-    return result['embedding']
+    """Generate embeddings using local model instead of Google's API"""
+    # Original code using Google API
+    # result = genai.embed_content(
+    #     model="models/embedding-001",
+    #     content=text_chunks,
+    #     task_type="retrieval_document"
+    # )
+    # return result['embedding']
+    
+    # New code using local model
+    model = get_embedding_model()
+    embeddings = model.encode(text_chunks)
+    # Return as list of lists to match the expected format
+    return embeddings.tolist()
 
 def initialize_chromadb():
     client = chromadb.PersistentClient(path=settings.CHROMA_DB_PATH)
     return client.get_or_create_collection(name=settings.CHROMA_COLLECTION_NAME)
 
-def query_chromadb(collection, query_text, n_results=5, document_names=None): # Add document_names
-    query_embedding = genai.embed_content(
-        model="models/embedding-001",
-        content=query_text,
-        task_type="retrieval_query"
-    )['embedding']
+def query_chromadb(collection, query_text, n_results=5, document_names=None):
+    """Query ChromaDB using local embedding model"""
+    # Original code using Google API
+    # query_embedding = genai.embed_content(
+    #     model="models/embedding-001",
+    #     content=query_text,
+    #     task_type="retrieval_query"
+    # )['embedding']
+    
+    # New code using local model
+    model = get_embedding_model()
+    query_embedding = model.encode(query_text).tolist()
     
     query_params = {
         "query_embeddings": [query_embedding],
