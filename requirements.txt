@@ -1,5 +1,5 @@
-Django>=4.0
-django-cors-headers
+Flask>=2.0.1
+Flask-Cors>=3.0.10
 google-generativeai
 chromadb
 pypdf

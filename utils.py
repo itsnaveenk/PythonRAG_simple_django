@@ -2,13 +2,12 @@ import os
 import google.generativeai as genai
 import chromadb
 from pypdf import PdfReader
-from django.conf import settings
 import io
 import docx
 import textract
 import uuid
 from pptx import Presentation
-from sentence_transformers import SentenceTransformer  # Added import for local embeddings
+from sentence_transformers import SentenceTransformer
 
 # Initialize the embedding model
 _embedding_model = None
@@ -32,7 +31,7 @@ def extract_text_from_docx(file_path):
         doc = docx.Document(file_path)
         text = "\n".join([paragraph.text for paragraph in doc.paragraphs])
         return text
-    except Exception as e:
+    except Exception:
         # Fallback to textract if python-docx fails
         return extract_text_with_textract(file_path)
 
@@ -59,7 +58,7 @@ def extract_text_from_pptx(file_path):
                 if hasattr(shape, "text"):
                     text.append(shape.text)
         return "\n".join(text)
-    except Exception as e:
+    except Exception:
         # Fallback to textract if python-pptx fails or for .ppt files
         return extract_text_with_textract(file_path)
 
@@ -84,7 +83,7 @@ def extract_text_from_document(file_path):
         return extract_text_from_txt(file_path)
     elif file_extension == '.pptx':
         return extract_text_from_pptx(file_path)
-    elif file_extension == '.ppt': # Older .ppt format, try textract
+    elif file_extension == '.ppt':  # Older .ppt format, try textract
         return extract_text_with_textract(file_path)
     else:
         raise ValueError(f"Unsupported file extension: {file_extension}")
@@ -95,67 +94,59 @@ def chunk_text(text, chunk_size=1000, overlap=100):
 
 def get_embeddings(text_chunks):
     """Generate embeddings using local model instead of Google's API"""
-    # Original code using Google API
-    # result = genai.embed_content(
-    #     model="models/embedding-001",
-    #     content=text_chunks,
-    #     task_type="retrieval_document"
-    # )
-    # return result['embedding']
-    
-    # New code using local model
     model = get_embedding_model()
     embeddings = model.encode(text_chunks)
     # Return as list of lists to match the expected format
     return embeddings.tolist()
 
-def initialize_chromadb():
-    client = chromadb.PersistentClient(path=settings.CHROMA_DB_PATH)
-    return client.get_or_create_collection(name=settings.CHROMA_COLLECTION_NAME)
+def initialize_chromadb(db_path, collection_name):
+    """Initialize ChromaDB with the specified path and collection name
+    
+    Args:
+        db_path: Path to the ChromaDB persistence directory
+        collection_name: Name of the collection to use
+        
+    Returns:
+        A ChromaDB collection object
+    """
+    try:
+        client = chromadb.PersistentClient(path=db_path)
+        return client.get_or_create_collection(name=collection_name)
+    except Exception as e:
+        print(f"Error initializing ChromaDB: {e}")
+        return None
 
 def query_chromadb(collection, query_text, n_results=5, document_names=None):
     """Query ChromaDB using local embedding model"""
-    # Original code using Google API
-    # query_embedding = genai.embed_content(
-    #     model="models/embedding-001",
-    #     content=query_text,
-    #     task_type="retrieval_query"
-    # )['embedding']
-    
-    # New code using local model
-    model = get_embedding_model()
-    query_embedding = model.encode(query_text).tolist()
-    
-    query_params = {
-        "query_embeddings": [query_embedding],
-        "n_results": n_results,
-        "include": ['documents', 'metadatas'] # Ensure metadatas are included
-    }
+    try:
+        model = get_embedding_model()
+        query_embedding = model.encode(query_text).tolist()
+        
+        query_params = {
+            "query_embeddings": [query_embedding],
+            "n_results": n_results,
+            "include": ['documents', 'metadatas']
+        }
 
-    if document_names and isinstance(document_names, list) and len(document_names) > 0:
-        query_params["where"] = {"filename": {"$in": document_names}}
+        if document_names and isinstance(document_names, list) and len(document_names) > 0:
+            query_params["where"] = {"filename": {"$in": document_names}}
 
-    results = collection.query(**query_params)
-    return results.get('documents', [[]])[0]
+        results = collection.query(**query_params)
+        return results.get('documents', [[]])[0]
+    except Exception as e:
+        print(f"Error querying ChromaDB: {e}")
+        return []
 
 def generate_response(query_text, context_chunks):
-    context = "\n\n".join(context_chunks)
-    prompt = f"""Based ONLY on the following context:\n\n{context}\n\nAnswer the following question:\n{query_text}\n\nAnswer:"""
-    response = genai.GenerativeModel('gemini-1.5-flash').generate_content(prompt)
-    return response.text if response.text else "No answer available."
-
-def handle_pdf_upload(uploaded_file):
-    temp_path = os.path.join(settings.BASE_DIR, 'temp_uploads')
-    os.makedirs(temp_path, exist_ok=True)
-    # Generate a unique temporary filename to avoid collisions and potential security issues
-    original_extension = os.path.splitext(uploaded_file.name)[1]
-    temp_filename = f"{uuid.uuid4()}{original_extension}"
-    file_path = os.path.join(temp_path, temp_filename)
-
+    """Generate a response using Google Gemini model
+    
+    Make sure GEMINI_API_KEY is set in your environment or Flask config
+    """
     try:
-        with open(file_path, 'wb') as f:
-            f.write(uploaded_file.read())
-        return file_path
+        context = "\n\n".join(context_chunks)
+        prompt = f"""Based ONLY on the following context:\n\n{context}\n\nAnswer the following question:\n{query_text}\n\nAnswer:"""
+        response = genai.GenerativeModel('gemini-1.5-flash').generate_content(prompt)
+        return response.text if response.text else "No answer available."
     except Exception as e:
-        raise Exception(f"Failed to save uploaded file: {str(e)}") # Generic error message
-
+        print(f"Error generating response: {e}")
+        return "An error occurred while generating the response."
