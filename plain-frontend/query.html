@@ -1,191 +1,399 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Query Documents - TextAssist</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Query Documents - RAG Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #4a6fa5;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .app-layout {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .sidebar {
+            flex: 0 0 300px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .sidebar-header {
+            background-color: #f0f0f0;
+            padding: 15px 20px;
+            border-bottom: 1px solid #ddd;
+        }
+        .sidebar-body {
+            padding: 15px;
+        }
+        .document-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .document-item {
+            padding: 8px 5px;
+            display: flex;
+            align-items: center;
+        }
+        .chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            min-width: 300px;
+            min-height: 600px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+        }
+        .empty-chat {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #777;
+            text-align: center;
+            padding: 20px;
+        }
+        .message {
+            padding: 12px 15px;
+            border-radius: 8px;
+            max-width: 80%;
+        }
+        .query-message {
+            align-self: flex-end;
+            background-color: #e6f2ff;
+        }
+        .response-message {
+            align-self: flex-start;
+            background-color: #f0f0f0;
+        }
+        .chat-input {
+            padding: 15px 20px;
+            border-top: 1px solid #ddd;
+            display: flex;
+            gap: 10px;
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 10px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            outline: none;
+        }
+        .chat-input input:focus {
+            border-color: #4a6fa5;
+        }
+        .chat-input button {
+            background-color: #4a6fa5;
+            color: white;
+            border: none;
+            padding: 0 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-input button:hover {
+            background-color: #3a5985;
+        }
+        .chat-input button:disabled {
+            background-color: #aaa;
+            cursor: not-allowed;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #777;
+        }
+        .checkbox-item {
+            margin-bottom: 8px;
+        }
+        .select-all {
+            margin-bottom: 10px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #eee;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Navbar -->
-        <header class="navbar">
-            <div class="container">
-                <a href="{% url 'home' %}" class="logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    <span>TextAssist</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="{% url 'home' %}" class="nav-link">Home</a>
-                    <a href="{% url 'upload_page' %}" class="nav-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        Upload
-                    </a>
-                    <a href="{% url 'query_page' %}" class="nav-link active">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        Query
-                    </a>
-                </nav>
-                <div class="theme-toggle">
-                    <button id="theme-toggle-btn" aria-label="Toggle Theme">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon sun-icon">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon moon-icon">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                    </button>
+    <header>
+        <h1>RAG Document Assistant</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/upload/">Upload</a>
+            <a href="/query/">Query</a>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <h2>Query Documents</h2>
+        
+        <div class="app-layout">
+            <div class="sidebar">
+                <div class="sidebar-header">
+                    <h3 style="margin: 0;">Documents</h3>
                 </div>
-                <button id="mobile-menu-btn" class="mobile-menu-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+                <div class="sidebar-body">
+                    <div id="documentList">
+                        <div id="loadingDocuments" class="loading">
+                            Loading documents...
+                        </div>
+                        <div class="select-all" id="selectAllContainer" style="display: none;">
+                            <label class="checkbox-item">
+                                <input type="checkbox" id="selectAll" checked>
+                                Select All
+                            </label>
+                        </div>
+                        <div class="document-list" id="documentListItems">
+                            <!-- Documents will be loaded here -->
+                        </div>
+                        <div id="noDocuments" style="display: none;">
+                            No documents found. Please upload some documents first.
+                        </div>
+                    </div>
+                </div>
             </div>
-        </header>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="mobile-menu">
-            <div class="mobile-menu-container">
-                <a href="{% url 'home' %}" class="mobile-nav-link">Home</a>
-                <a href="{% url 'upload_page' %}" class="mobile-nav-link">Upload</a>
-                <a href="{% url 'query_page' %}" class="mobile-nav-link active">Query</a>
+            
+            <div class="chat-container">
+                <div id="chatMessages" class="chat-messages">
+                    <div id="emptyChat" class="empty-chat">
+                        <p>Select documents from the sidebar and ask questions about their content.</p>
+                    </div>
+                    <!-- Chat messages will appear here -->
+                </div>
+                <div id="loadingResponse" class="loading" style="display: none;">
+                    Processing your query...
+                </div>
+                <div class="chat-input">
+                    <input type="text" id="queryInput" placeholder="Ask a question about your documents...">
+                    <button id="sendButton" disabled>Send</button>
+                </div>
             </div>
         </div>
-
-        <!-- Main Content -->
-        <main class="query-main">
-            <!-- Sidebar -->
-            <aside id="sidebar" class="sidebar">
-                <div class="sidebar-header">
-                    <h2 class="sidebar-title">Documents</h2>
-                    <button id="sidebar-toggle" class="sidebar-toggle">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                            <polyline points="15 18 9 12 15 6"></polyline>
-                        </svg>
-                    </button>
-                </div>
-                <div class="sidebar-content">
-                    <div class="sidebar-section">
-                        <div class="sidebar-section-header">
-                            <span class="sidebar-section-title">Select documents to query</span>
-                            <span id="selected-count" class="sidebar-section-subtitle">0 of 0 selected</span>
-                        </div>
-                        <div id="documents-loading" class="documents-loading">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon loader">
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <path d="M12 6v6l4 2"></path>
-                            </svg>
-                        </div>
-                        <ul id="documents-list" class="documents-list">
-                            <!-- Documents will be added here dynamically -->
-                        </ul>
-                    </div>
-                </div>
-            </aside>
-
-            <!-- Chat Area -->
-            <div class="chat-container">
-                <div id="chat-messages" class="chat-messages">
-                    <div id="empty-chat" class="empty-chat">
-                        <div class="empty-chat-icon-container">
-                            <div class="animated-gradient small" id="chat-gradient"></div>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="empty-chat-icon">
-                                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                            </svg>
-                        </div>
-                        <h3 class="empty-chat-title">Start a conversation</h3>
-                        <p class="empty-chat-description">Select documents from the sidebar and ask questions about their content.</p>
-                    </div>
-                    <!-- Chat messages will be added here dynamically -->
-                </div>
-                <div class="chat-input-container">
-                    <form id="query-form" class="query-form">
-                        <div class="query-input-row">
-                            <button id="voice-toggle-btn" type="button" class="voice-toggle-btn" title="Toggle voice input">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon mic-icon">
-                                    <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                                    <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                    <line x1="12" x2="12" y1="19" y2="22"></line>
-                                </svg>
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon mic-off-icon hidden">
-                                    <line x1="2" y1="2" x2="22" y2="22"></line>
-                                    <path d="M18.89 13.23A7.12 7.12 0 0 0 19 12v-2"></path>
-                                    <path d="M5 10v2a7 7 0 0 0 12 7"></path>
-                                    <path d="M15 9.34V5a3 3 0 0 0-5.68-1.33"></path>
-                                    <path d="M9 9v3a3 3 0 0 0 5.12 2.12"></path>
-                                    <line x1="12" x2="12" y1="19" y2="22"></line>
-                                </svg>
-                            </button>
-                            <div class="query-input-wrapper">
-                                <textarea id="query-input" class="query-input" placeholder="Ask a question about your documents..." rows="1"></textarea>
-                                <button id="send-btn" type="submit" class="send-btn" disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon send-icon">
-                                        <path d="m22 2-7 20-4-9-9-4Z"></path>
-                                        <path d="M22 2 11 13"></path>
-                                    </svg>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon loader hidden">
-                                        <circle cx="12" cy="12" r="10"></circle>
-                                        <path d="M12 6v6l4 2"></path>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="query-actions-row">
-                            <div id="query-status" class="query-status">No documents selected</div>
-                            <div class="query-actions">
-                                <button id="download-btn" type="button" class="action-btn" title="Download conversation" disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="7 10 12 15 17 10"></polyline>
-                                        <line x1="12" y1="15" x2="12" y2="3"></line>
-                                    </svg>
-                                </button>
-                                <button id="clear-btn" type="button" class="action-btn" title="Clear conversation" disabled>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                        <path d="M3 6h18"></path>
-                                        <path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path>
-                                        <path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path>
-                                        <line x1="10" y1="11" x2="10" y2="17"></line>
-                                        <line x1="14" y1="11" x2="14" y2="17"></line>
-                                    </svg>
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </main>
-
-        <!-- Toast Container -->
-        <div id="toast-container" class="toast-container"></div>
     </div>
-
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/query.js' %}"></script>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const documentListItems = document.getElementById('documentListItems');
+            const loadingDocuments = document.getElementById('loadingDocuments');
+            const noDocuments = document.getElementById('noDocuments');
+            const selectAllContainer = document.getElementById('selectAllContainer');
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const chatMessages = document.getElementById('chatMessages');
+            const emptyChat = document.getElementById('emptyChat');
+            const queryInput = document.getElementById('queryInput');
+            const sendButton = document.getElementById('sendButton');
+            const loadingResponse = document.getElementById('loadingResponse');
+            
+            // Fetch documents
+            function fetchDocuments() {
+                loadingDocuments.style.display = 'block';
+                documentListItems.innerHTML = '';
+                noDocuments.style.display = 'none';
+                selectAllContainer.style.display = 'none';
+                
+                fetch('/api/documents/')
+                    .then(response => response.json())
+                    .then(data => {
+                        loadingDocuments.style.display = 'none';
+                        
+                        if (data.success && data.documents && data.documents.length > 0) {
+                            data.documents.forEach((doc, index) => {
+                                const item = document.createElement('label');
+                                item.className = 'checkbox-item document-item';
+                                item.innerHTML = `
+                                    <input type="checkbox" class="document-checkbox" value="${doc}" checked>
+                                    ${doc}
+                                `;
+                                documentListItems.appendChild(item);
+                            });
+                            
+                            selectAllContainer.style.display = 'block';
+                            updateSendButtonState();
+                            setupCheckboxListeners();
+                        } else {
+                            noDocuments.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        loadingDocuments.style.display = 'none';
+                        noDocuments.style.display = 'block';
+                        noDocuments.textContent = 'Error loading documents.';
+                        console.error('Error fetching documents:', error);
+                    });
+            }
+            
+            // Setup checkbox listeners
+            function setupCheckboxListeners() {
+                const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+                
+                // Select all functionality
+                selectAllCheckbox.addEventListener('change', function() {
+                    documentCheckboxes.forEach(checkbox => {
+                        checkbox.checked = selectAllCheckbox.checked;
+                    });
+                    updateSendButtonState();
+                });
+                
+                // Individual checkbox change
+                documentCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        updateSelectAllCheckbox();
+                        updateSendButtonState();
+                    });
+                });
+            }
+            
+            // Update select all checkbox based on individual selections
+            function updateSelectAllCheckbox() {
+                const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+                const checkedCount = document.querySelectorAll('.document-checkbox:checked').length;
+                
+                if (checkedCount === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                } else if (checkedCount === documentCheckboxes.length) {
+                    selectAllCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.indeterminate = true;
+                }
+            }
+            
+            // Update send button state based on checkbox selections
+            function updateSendButtonState() {
+                const checkedCount = document.querySelectorAll('.document-checkbox:checked').length;
+                sendButton.disabled = checkedCount === 0;
+            }
+            
+            // Send query
+            sendButton.addEventListener('click', function() {
+                const query = queryInput.value.trim();
+                if (query === '') return;
+                
+                // Get selected documents
+                const selectedDocuments = [];
+                document.querySelectorAll('.document-checkbox:checked').forEach(checkbox => {
+                    selectedDocuments.push(checkbox.value);
+                });
+                
+                // Show query in chat
+                emptyChat.style.display = 'none';
+                const queryMessageElement = document.createElement('div');
+                queryMessageElement.className = 'message query-message';
+                queryMessageElement.textContent = query;
+                chatMessages.appendChild(queryMessageElement);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Clear input
+                queryInput.value = '';
+                
+                // Show loading
+                loadingResponse.style.display = 'block';
+                sendButton.disabled = true;
+                
+                // Send query to API
+                fetch('/api/query/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        document_names: selectedDocuments
+                    }),
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadingResponse.style.display = 'none';
+                    
+                    // Show response in chat
+                    const responseMessageElement = document.createElement('div');
+                    responseMessageElement.className = 'message response-message';
+                    
+                    if (data.success) {
+                        responseMessageElement.textContent = data.response;
+                    } else {
+                        responseMessageElement.textContent = 'Error: ' + (data.message || 'Failed to get response');
+                        responseMessageElement.style.color = '#d32f2f';
+                    }
+                    
+                    chatMessages.appendChild(responseMessageElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    updateSendButtonState();
+                })
+                .catch(error => {
+                    loadingResponse.style.display = 'none';
+                    
+                    const errorMessageElement = document.createElement('div');
+                    errorMessageElement.className = 'message response-message';
+                    errorMessageElement.textContent = 'Network error. Please try again.';
+                    errorMessageElement.style.color = '#d32f2f';
+                    
+                    chatMessages.appendChild(errorMessageElement);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    updateSendButtonState();
+                    
+                    console.error('Error querying:', error);
+                });
+            });
+            
+            // Allow sending with Enter key
+            queryInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter' && !sendButton.disabled) {
+                    sendButton.click();
+                    e.preventDefault();
+                }
+            });
+            
+            // Initial fetch
+            fetchDocuments();
+        });
+    </script>
 </body>
 </html>

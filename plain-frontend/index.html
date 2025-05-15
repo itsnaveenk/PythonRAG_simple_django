@@ -1,286 +1,116 @@
-{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>TextAssist - Document Analysis & Query Processing</title>
-    <link rel="stylesheet" href="{% static 'styles.css' %}">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>RAG Document Assistant</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            color: #333;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        header {
+            background-color: #4a6fa5;
+            color: white;
+            padding: 1rem;
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 0 15px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+        }
+        nav a:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+        .hero {
+            text-align: center;
+            padding: 2rem 1rem;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        .cards {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+        .card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            width: 300px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .card h3 {
+            margin-top: 0;
+            color: #4a6fa5;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #4a6fa5;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 4px;
+            text-decoration: none;
+            margin-top: 15px;
+            transition: background-color 0.2s;
+        }
+        .btn:hover {
+            background-color: #3a5985;
+        }
+    </style>
 </head>
 <body>
-    <div class="app-container">
-        <!-- Navbar -->
-        <header class="navbar">
-            <div class="container">
-                <a href="{% url 'home' %}" class="logo">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                        <polyline points="14 2 14 8 20 8"></polyline>
-                        <line x1="16" y1="13" x2="8" y2="13"></line>
-                        <line x1="16" y1="17" x2="8" y2="17"></line>
-                        <polyline points="10 9 9 9 8 9"></polyline>
-                    </svg>
-                    <span>TextAssist</span>
-                </a>
-                <nav class="nav-links">
-                    <a href="{% url 'home' %}" class="nav-link active">Home</a>
-                    <a href="{% url 'upload_page' %}" class="nav-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                            <polyline points="17 8 12 3 7 8"></polyline>
-                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                        </svg>
-                        Upload
-                    </a>
-                    <a href="{% url 'query_page' %}" class="nav-link">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                        </svg>
-                        Query
-                    </a>
-                </nav>
-                <div class="theme-toggle">
-                    <button id="theme-toggle-btn" aria-label="Toggle Theme">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon sun-icon">
-                            <circle cx="12" cy="12" r="5"></circle>
-                            <line x1="12" y1="1" x2="12" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="23"></line>
-                            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-                            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-                            <line x1="1" y1="12" x2="3" y2="12"></line>
-                            <line x1="21" y1="12" x2="23" y2="12"></line>
-                            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-                            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-                        </svg>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon moon-icon">
-                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-                        </svg>
-                    </button>
-                </div>
-                <button id="mobile-menu-btn" class="mobile-menu-btn">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="3" y1="12" x2="21" y2="12"></line>
-                        <line x1="3" y1="6" x2="21" y2="6"></line>
-                        <line x1="3" y1="18" x2="21" y2="18"></line>
-                    </svg>
-                </button>
+    <header>
+        <h1>RAG Document Assistant</h1>
+        <nav>
+            <a href="/">Home</a>
+            <a href="/upload/">Upload</a>
+            <a href="/query/">Query</a>
+        </nav>
+    </header>
+    
+    <div class="container">
+        <div class="hero">
+            <h2>Retrieve Information from Your Documents</h2>
+            <p>Upload documents and query them using natural language processing</p>
+        </div>
+        
+        <div class="cards">
+            <div class="card">
+                <h3>Upload Documents</h3>
+                <p>Upload PDF, DOCX, TXT, and other document formats to add them to the knowledge base.</p>
+                <a href="/upload/" class="btn">Upload Documents</a>
             </div>
-        </header>
-
-        <!-- Mobile Menu -->
-        <div id="mobile-menu" class="mobile-menu">
-            <div class="mobile-menu-container">
-                <a href="{% url 'home' %}" class="mobile-nav-link active">Home</a>
-                <a href="{% url 'upload_page' %}" class="mobile-nav-link">Upload</a>
-                <a href="{% url 'query_page' %}" class="mobile-nav-link">Query</a>
+            
+            <div class="card">
+                <h3>Query Documents</h3>
+                <p>Ask questions about your documents and get precise answers using AI.</p>
+                <a href="/query/" class="btn">Start Querying</a>
             </div>
         </div>
-
-        <!-- Main Content -->
-        <main>
-            <!-- Hero Section -->
-            <section class="hero-section">
-                <div class="animated-gradient" id="hero-gradient"></div>
-                <div class="container">
-                    <div class="hero-content">
-                        <h1 class="hero-title">TextAssist</h1>
-                        <p class="hero-description">
-                            A powerful Retrieval-Augmented Generation (RAG) system for document analysis and query processing
-                        </p>
-                        <div class="hero-buttons">
-                            <a href="{% url 'upload_page' %}" class="btn btn-primary animate-in">
-                                Upload Documents
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                    <polyline points="17 8 12 3 7 8"></polyline>
-                                    <line x1="12" y1="3" x2="12" y2="15"></line>
-                                </svg>
-                            </a>
-                            <a href="{% url 'query_page' %}" class="btn btn-outline animate-in delay-150">
-                                Start Querying
-                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                    <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                </svg>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Features Section -->
-            <section class="features-section">
-                <div class="container">
-                    <div class="features-grid">
-                        <div class="features-content">
-                            <h2 class="section-title">Powerful Document Analysis</h2>
-                            <p class="section-description">
-                                Upload your documents and get AI-powered insights and answers to your questions.
-                            </p>
-                            <ul class="features-list">
-                                <li class="feature-item">
-                                    <div class="feature-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                            <polyline points="14 2 14 8 20 8"></polyline>
-                                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                                            <polyline points="10 9 9 9 8 9"></polyline>
-                                        </svg>
-                                    </div>
-                                    <span>Support for PDF, DOCX, TXT, PPTX and more</span>
-                                </li>
-                                <li class="feature-item">
-                                    <div class="feature-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                        </svg>
-                                    </div>
-                                    <span>Natural language queries with context-aware responses</span>
-                                </li>
-                                <li class="feature-item">
-                                    <div class="feature-icon">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                            <line x1="12" x2="12" y1="19" y2="22"></line>
-                                        </svg>
-                                    </div>
-                                    <span>Voice input and text-to-speech capabilities</span>
-                                </li>
-                            </ul>
-                        </div>
-                        <div class="features-image">
-                            <div class="app-preview">
-                                <div class="app-preview-window">
-                                    <div class="window-controls">
-                                        <div class="control red"></div>
-                                        <div class="control yellow"></div>
-                                        <div class="control green"></div>
-                                    </div>
-                                    <div class="window-content">
-                                        <div class="content-lines">
-                                            <div class="line line-1"></div>
-                                            <div class="line line-2"></div>
-                                            <div class="line line-3"></div>
-                                            <div class="line line-4"></div>
-                                            <div class="line line-5"></div>
-                                            <div class="line line-6"></div>
-                                        </div>
-                                        <div class="input-area">
-                                            <div class="input-field"></div>
-                                            <div class="send-button">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                                    <polyline points="9 18 15 12 9 6"></polyline>
-                                                </svg>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Cards Section -->
-            <section class="cards-section">
-                <div class="container">
-                    <div class="cards-grid">
-                        <div class="card animate-in">
-                            <div class="card-header">
-                                <h3 class="card-title">Document Upload</h3>
-                                <p class="card-subtitle">Upload and process various document formats</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">
-                                    Support for PDF, DOCX, TXT, PPTX and more. Our system processes and indexes your documents for quick retrieval.
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="{% url 'upload_page' %}" class="btn btn-outline btn-full">
-                                    Upload Documents
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                        <polyline points="17 8 12 3 7 8"></polyline>
-                                        <line x1="12" y1="3" x2="12" y2="15"></line>
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="card animate-in delay-150">
-                            <div class="card-header">
-                                <h3 class="card-title">Natural Language Queries</h3>
-                                <p class="card-subtitle">Ask questions in plain language</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">
-                                    Query your documents using natural language. Get context-aware responses powered by Gemini AI.
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="{% url 'query_page' %}" class="btn btn-outline btn-full">
-                                    Start Querying
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                        <div class="card animate-in delay-300">
-                            <div class="card-header">
-                                <h3 class="card-title">Voice Capabilities</h3>
-                                <p class="card-subtitle">Speak and listen to responses</p>
-                            </div>
-                            <div class="card-body">
-                                <p class="card-text">
-                                    Use voice input for queries and text-to-speech for responses. A hands-free experience for document analysis.
-                                </p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="{% url 'query_page' %}" class="btn btn-outline btn-full">
-                                    Try Voice Features
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                        <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"></path>
-                                        <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
-                                        <line x1="12" x2="12" y1="19" y2="22"></line>
-                                    </svg>
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-        </main>
-
-        <!-- Footer -->
-        <footer class="footer">
-            <div class="container">
-                <div class="footer-content">
-                    <div class="footer-logo">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="icon">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                            <polyline points="14 2 14 8 20 8"></polyline>
-                            <line x1="16" y1="13" x2="8" y2="13"></line>
-                            <line x1="16" y1="17" x2="8" y2="17"></line>
-                            <polyline points="10 9 9 9 8 9"></polyline>
-                        </svg>
-                        <p class="footer-copyright">© <span id="current-year"></span> TextAssist. All rights reserved.</p>
-                    </div>
-                    <nav class="footer-links">
-                        <a href="#" class="footer-link">Terms</a>
-                        <a href="#" class="footer-link">Privacy</a>
-                        <a href="#" class="footer-link">Documentation</a>
-                    </nav>
-                </div>
-            </div>
-        </footer>
-
-        <!-- Toast Container -->
-        <div id="toast-container" class="toast-container"></div>
     </div>
-
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/home.js' %}"></script>
 </body>
 </html>
