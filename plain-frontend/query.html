@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Query Documents - RAG Assistant</title>
+    <title>Query Documents - TextAssist</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -79,7 +79,7 @@
 </head>
 <body>
     <header>
-        <h1>RAG Document Assistant</h1>
+        <h1>TextAssist</h1>
         <nav>
             <a href="/">Home</a>
             <a href="/upload/">Upload</a>
@@ -118,6 +118,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Get all the elements we need
             const loadingMessage = document.getElementById('loadingMessage');
             const documentList = document.getElementById('documentList');
             const noDocuments = document.getElementById('noDocuments');
@@ -125,15 +126,17 @@
             const queryInput = document.getElementById('queryInput');
             const queryButton = document.getElementById('queryButton');
             
-            // Fetch documents
+            // Get document list from server
             fetch('/api/documents/')
-                .then(response => response.json())
-                .then(data => {
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
                     loadingMessage.style.display = 'none';
                     
                     if (data.success && data.documents && data.documents.length > 0) {
-                        // Create document checkboxes
-                        data.documents.forEach(doc => {
+                        // Create checkboxes for each document
+                        data.documents.forEach(function(doc) {
                             const docItem = document.createElement('div');
                             docItem.className = 'document-item';
                             docItem.innerHTML = `
@@ -144,7 +147,7 @@
                             documentList.appendChild(docItem);
                         });
                         
-                        // Add select all option
+                        // Add "Select All" option
                         const selectAllItem = document.createElement('div');
                         selectAllItem.className = 'document-item';
                         selectAllItem.innerHTML = `
@@ -156,14 +159,16 @@
                         const selectAllCheckbox = document.getElementById('selectAll');
                         const documentCheckboxes = document.querySelectorAll('.document-checkbox');
                         
+                        // When "Select All" checkbox changes
                         selectAllCheckbox.addEventListener('change', function() {
-                            documentCheckboxes.forEach(checkbox => {
+                            documentCheckboxes.forEach(function(checkbox) {
                                 checkbox.checked = selectAllCheckbox.checked;
                             });
                             updateQueryButtonState();
                         });
                         
-                        documentCheckboxes.forEach(checkbox => {
+                        // When any document checkbox changes
+                        documentCheckboxes.forEach(function(checkbox) {
                             checkbox.addEventListener('change', updateQueryButtonState);
                         });
                         
@@ -172,36 +177,36 @@
                         noDocuments.style.display = 'block';
                     }
                 })
-                .catch(error => {
+                .catch(function(error) {
                     loadingMessage.style.display = 'none';
                     noDocuments.style.display = 'block';
                     console.error('Error fetching documents:', error);
                 });
             
-            // Update query button state based on checkboxes
+            // Enable/disable query button based on checkbox selection
             function updateQueryButtonState() {
                 const anyChecked = document.querySelector('.document-checkbox:checked');
                 queryButton.disabled = !anyChecked;
             }
             
-            // Handle query submission
+            // Handle sending a query
             queryButton.addEventListener('click', function() {
                 const query = queryInput.value.trim();
                 if (!query) return;
                 
                 // Get selected documents
                 const selectedDocs = [];
-                document.querySelectorAll('.document-checkbox:checked').forEach(checkbox => {
+                document.querySelectorAll('.document-checkbox:checked').forEach(function(checkbox) {
                     selectedDocs.push(checkbox.value);
                 });
                 
-                // Show query in chat
+                // Show the question in the chat
                 const queryMessageDiv = document.createElement('div');
                 queryMessageDiv.className = 'query-message';
                 queryMessageDiv.textContent = query;
                 chatMessages.appendChild(queryMessageDiv);
                 
-                // Clear input
+                // Clear the input and disable the button temporarily
                 queryInput.value = '';
                 queryButton.disabled = true;
                 
@@ -211,7 +216,7 @@
                 loadingDiv.textContent = 'Loading...';
                 chatMessages.appendChild(loadingDiv);
                 
-                // Scroll to bottom
+                // Scroll to bottom of chat
                 chatMessages.scrollTop = chatMessages.scrollHeight;
                 
                 // Send query to server
@@ -225,8 +230,10 @@
                         document_names: selectedDocs
                     })
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
                     // Remove loading message
                     chatMessages.removeChild(loadingDiv);
                     
@@ -247,7 +254,7 @@
                     // Re-enable button
                     updateQueryButtonState();
                 })
-                .catch(error => {
+                .catch(function(error) {
                     // Remove loading message
                     chatMessages.removeChild(loadingDiv);
                     

@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Flask application setup
-app = Flask(__name__, static_folder='plain-frontend', static_url_path='')
+app = Flask(__name__, static_folder='plain-frontend', static_url_path='/')
 CORS(app)
 
 # Configuration
@@ -35,14 +35,17 @@ os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 # Routes for static pages
 @app.route('/')
 def index():
+    # Serve the index.html file from the static folder
     return send_from_directory(app.static_folder, 'index.html')
 
 @app.route('/upload/')
 def upload_page():
+    # Serve the upload.html file from the static folder
     return send_from_directory(app.static_folder, 'upload.html')
 
 @app.route('/query/')
 def query_page():
+    # Serve the query.html file from the static folder
     return send_from_directory(app.static_folder, 'query.html')
 
 # API routes

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Upload Documents - RAG Assistant</title>
+    <title>Upload Documents - TextAssist</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -61,7 +61,7 @@
 </head>
 <body>
     <header>
-        <h1>RAG Document Assistant</h1>
+        <h1>TextAssist</h1>
         <nav>
             <a href="/">Home</a>
             <a href="/upload/">Upload</a>
@@ -107,6 +107,7 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Get all the elements we need
             const uploadForm = document.getElementById('uploadForm');
             const fileInput = document.getElementById('fileInput');
             const uploadStatus = document.getElementById('uploadStatus');
@@ -115,10 +116,11 @@
             const documentsTableBody = document.getElementById('documentsTableBody');
             const noDocuments = document.getElementById('noDocuments');
             
-            // Handle form submission
+            // When form is submitted
             uploadForm.addEventListener('submit', function(e) {
-                e.preventDefault();
+                e.preventDefault(); // Prevent default form submission
                 
+                // Check if a file is selected
                 if (fileInput.files.length === 0) {
                     uploadStatus.textContent = 'Please select a file first.';
                     return;
@@ -127,43 +129,55 @@
                 const file = fileInput.files[0];
                 uploadStatus.textContent = 'Uploading...';
                 
+                // Create form data to send the file
                 const formData = new FormData();
                 formData.append('file', file);
                 
+                // Send the file to the server
                 fetch('/api/upload/', {
                     method: 'POST',
                     body: formData
                 })
-                .then(response => response.json())
-                .then(data => {
+                .then(function(response) {
+                    return response.json();
+                })
+                .then(function(data) {
                     if (data.success) {
                         uploadStatus.textContent = 'Upload successful!';
-                        fileInput.value = '';
-                        fetchDocuments();
+                        fileInput.value = ''; // Clear the file input
+                        fetchDocuments(); // Update document list
                     } else {
                         uploadStatus.textContent = 'Error: ' + data.message;
                     }
                 })
-                .catch(error => {
+                .catch(function(error) {
                     uploadStatus.textContent = 'Upload failed. Please try again.';
                     console.error('Error:', error);
                 });
             });
             
-            // Fetch the list of uploaded documents
+            // Function to get the list of uploaded documents
             function fetchDocuments() {
+                // Show loading message and hide other elements
                 loadingMessage.style.display = 'block';
                 documentsTable.style.display = 'none';
                 noDocuments.style.display = 'none';
                 
+                // Get documents from server
                 fetch('/api/documents/')
-                    .then(response => response.json())
-                    .then(data => {
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then(function(data) {
                         loadingMessage.style.display = 'none';
                         
+                        // If there are documents, display them
                         if (data.success && data.documents && data.documents.length > 0) {
+                            // Clear previous document list
                             documentsTableBody.innerHTML = '';
-                            data.documents.forEach((doc, index) => {
+                            
+                            // Add each document to the table
+                            data.documents.forEach(function(doc, index) {
                                 const row = document.createElement('tr');
                                 row.innerHTML = `
                                     <td>${index + 1}</td>
@@ -171,12 +185,15 @@
                                 `;
                                 documentsTableBody.appendChild(row);
                             });
+                            
+                            // Show the table
                             documentsTable.style.display = 'table';
                         } else {
+                            // If no documents, show message
                             noDocuments.style.display = 'block';
                         }
                     })
-                    .catch(error => {
+                    .catch(function(error) {
                         loadingMessage.style.display = 'none';
                         noDocuments.style.display = 'block';
                         noDocuments.textContent = 'Error loading documents.';
@@ -184,7 +201,7 @@
                     });
             }
             
-            // Initial document fetch
+            // Load documents when page loads
             fetchDocuments();
         });
     </script>
