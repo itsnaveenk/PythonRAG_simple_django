@@ -6,15 +6,14 @@
     <title>Upload Documents - RAG Assistant</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            line-height: 1.6;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            color: #333;
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1000px;
+            width: 90%;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -26,84 +25,37 @@
             margin-bottom: 2rem;
         }
         nav {
-            display: flex;
-            justify-content: center;
             margin-top: 1rem;
         }
         nav a {
             color: white;
             text-decoration: none;
             margin: 0 15px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
-        }
-        nav a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
         }
         .card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
-            overflow: hidden;
-        }
-        .card-header {
-            background-color: #f0f0f0;
-            padding: 15px 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        .card-body {
             padding: 20px;
         }
-        .upload-area {
+        .upload-section {
             border: 2px dashed #aaa;
-            border-radius: 6px;
-            padding: 40px;
+            padding: 20px;
             text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
+            margin-bottom: 20px;
         }
-        .upload-area:hover, .upload-area.highlight {
-            border-color: #4a6fa5;
-            background-color: rgba(74, 111, 165, 0.05);
-        }
-        #progressWrapper {
+        .document-list {
             margin-top: 20px;
-            display: none;
-        }
-        .progress {
-            height: 6px;
-            background-color: #e9ecef;
-            border-radius: 4px;
-            overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%;
-            background-color: #4a6fa5;
-            transition: width 0.2s;
         }
         table {
             width: 100%;
             border-collapse: collapse;
         }
         table th, table td {
-            padding: 12px;
+            padding: 8px;
             text-align: left;
             border-bottom: 1px solid #ddd;
-        }
-        .badge {
-            display: inline-block;
-            padding: 4px 8px;
-            font-size: 12px;
-            border-radius: 4px;
-        }
-        .badge-success {
-            background-color: #28a745;
-            color: white;
-        }
-        .text-center {
-            text-align: center;
         }
     </style>
 </head>
@@ -121,42 +73,32 @@
         <h2>Upload Documents</h2>
         
         <div class="card">
-            <div class="card-body">
-                <div id="uploadArea" class="upload-area">
-                    <div id="dropText">
-                        <p>Drag and drop files here or click to select files</p>
-                        <p style="color: #666; font-size: 14px;">Supported formats: PDF, DOCX, DOC, TXT, RTF, PPT, PPTX</p>
-                    </div>
-                    <input type="file" id="fileInput" style="display: none;">
+            <form id="uploadForm">
+                <div class="upload-section">
+                    <p>Select a file to upload</p>
+                    <p>Supported formats: PDF, DOCX, DOC, TXT, RTF, PPT, PPTX</p>
+                    <input type="file" id="fileInput">
+                    <br><br>
+                    <button type="submit">Upload File</button>
                 </div>
-                <div id="progressWrapper">
-                    <p id="uploadingText">Uploading...</p>
-                    <div class="progress">
-                        <div id="uploadProgress" class="progress-bar" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
+            </form>
+            <div id="uploadStatus"></div>
         </div>
 
         <div class="card">
-            <div class="card-header">
-                Uploaded Documents
-            </div>
-            <div class="card-body">
-                <div id="loadingDocuments" class="text-center">
-                    <p>Loading documents...</p>
-                </div>
+            <h3>Uploaded Documents</h3>
+            <div id="loadingMessage">Loading documents...</div>
+            <div class="document-list">
                 <table id="documentsTable" style="display: none;">
                     <thead>
                         <tr>
                             <th>#</th>
-                            <th>Document</th>
-                            <th>Status</th>
+                            <th>Document Name</th>
                         </tr>
                     </thead>
                     <tbody id="documentsTableBody"></tbody>
                 </table>
-                <div id="noDocuments" class="text-center" style="display: none;">
+                <div id="noDocuments" style="display: none;">
                     <p>No documents uploaded yet.</p>
                 </div>
             </div>
@@ -165,105 +107,59 @@
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const uploadArea = document.getElementById('uploadArea');
+            const uploadForm = document.getElementById('uploadForm');
             const fileInput = document.getElementById('fileInput');
-            const progressWrapper = document.getElementById('progressWrapper');
-            const uploadProgress = document.getElementById('uploadProgress');
-            const uploladingText = document.getElementById('uploadingText');
+            const uploadStatus = document.getElementById('uploadStatus');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const documentsTable = document.getElementById('documentsTable');
+            const documentsTableBody = document.getElementById('documentsTableBody');
+            const noDocuments = document.getElementById('noDocuments');
             
-            // Upload area click event
-            uploadArea.addEventListener('click', () => {
-                fileInput.click();
-            });
-            
-            // File input change event
-            fileInput.addEventListener('change', handleFiles);
-            
-            // Drag and drop events
-            uploadArea.addEventListener('dragover', (e) => {
+            // Handle form submission
+            uploadForm.addEventListener('submit', function(e) {
                 e.preventDefault();
-                uploadArea.classList.add('highlight');
-            });
-            
-            uploadArea.addEventListener('dragleave', () => {
-                uploadArea.classList.remove('highlight');
-            });
-            
-            uploadArea.addEventListener('drop', (e) => {
-                e.preventDefault();
-                uploadArea.classList.remove('highlight');
-                const files = e.dataTransfer.files;
-                if (files.length > 0) {
-                    uploadFile(files[0]);
+                
+                if (fileInput.files.length === 0) {
+                    uploadStatus.textContent = 'Please select a file first.';
+                    return;
                 }
-            });
-            
-            // Handle selected files
-            function handleFiles() {
-                const files = fileInput.files;
-                if (files.length > 0) {
-                    uploadFile(files[0]);
-                }
-                fileInput.value = '';
-            }
-            
-            // Upload file to server
-            function uploadFile(file) {
+                
+                const file = fileInput.files[0];
+                uploadStatus.textContent = 'Uploading...';
+                
                 const formData = new FormData();
                 formData.append('file', file);
                 
-                const xhr = new XMLHttpRequest();
-                xhr.open('POST', '/api/upload/', true);
-                
-                xhr.upload.onprogress = (e) => {
-                    if (e.lengthComputable) {
-                        const percentComplete = Math.round((e.loaded / e.total) * 100);
-                        progressWrapper.style.display = 'block';
-                        uploadProgress.style.width = percentComplete + '%';
-                        uploladingText.textContent = `Uploading ${file.name}... ${percentComplete}%`;
-                    }
-                };
-                
-                xhr.onload = function() {
-                    progressWrapper.style.display = 'none';
-                    uploadProgress.style.width = '0%';
-                    
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        if (response.success) {
-                            alert('Document uploaded successfully!');
-                            fetchDocuments();
-                        } else {
-                            alert('Error: ' + response.message);
-                        }
+                fetch('/api/upload/', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        uploadStatus.textContent = 'Upload successful!';
+                        fileInput.value = '';
+                        fetchDocuments();
                     } else {
-                        alert('Upload failed. Status: ' + xhr.status);
+                        uploadStatus.textContent = 'Error: ' + data.message;
                     }
-                };
-                
-                xhr.onerror = function() {
-                    progressWrapper.style.display = 'none';
-                    alert('Upload failed. Please try again.');
-                };
-                
-                xhr.send(formData);
-            }
+                })
+                .catch(error => {
+                    uploadStatus.textContent = 'Upload failed. Please try again.';
+                    console.error('Error:', error);
+                });
+            });
             
             // Fetch the list of uploaded documents
             function fetchDocuments() {
-                const loadingDocuments = document.getElementById('loadingDocuments');
-                const documentsTable = document.getElementById('documentsTable');
-                const documentsTableBody = document.getElementById('documentsTableBody');
-                const noDocuments = document.getElementById('noDocuments');
-                
-                loadingDocuments.style.display = 'block';
+                loadingMessage.style.display = 'block';
                 documentsTable.style.display = 'none';
                 noDocuments.style.display = 'none';
                 
                 fetch('/api/documents/')
                     .then(response => response.json())
                     .then(data => {
-                        loadingDocuments.style.display = 'none';
+                        loadingMessage.style.display = 'none';
                         
                         if (data.success && data.documents && data.documents.length > 0) {
                             documentsTableBody.innerHTML = '';
@@ -272,7 +168,6 @@
                                 row.innerHTML = `
                                     <td>${index + 1}</td>
                                     <td>${doc}</td>
-                                    <td><span class="badge badge-success">Processed</span></td>
                                 `;
                                 documentsTableBody.appendChild(row);
                             });
@@ -282,9 +177,9 @@
                         }
                     })
                     .catch(error => {
-                        loadingDocuments.style.display = 'none';
+                        loadingMessage.style.display = 'none';
                         noDocuments.style.display = 'block';
-                        noDocuments.innerHTML = '<p>Error loading documents.</p>';
+                        noDocuments.textContent = 'Error loading documents.';
                         console.error('Error fetching documents:', error);
                     });
             }

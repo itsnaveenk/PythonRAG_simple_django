@@ -6,15 +6,14 @@
     <title>Query Documents - RAG Assistant</title>
     <style>
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
-            line-height: 1.6;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            color: #333;
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 1200px;
+            width: 90%;
+            max-width: 800px;
             margin: 0 auto;
             padding: 20px;
         }
@@ -26,137 +25,55 @@
             margin-bottom: 2rem;
         }
         nav {
-            display: flex;
-            justify-content: center;
             margin-top: 1rem;
         }
         nav a {
             color: white;
             text-decoration: none;
             margin: 0 15px;
-            padding: 5px 10px;
-            border-radius: 4px;
-            transition: background-color 0.2s;
         }
-        nav a:hover {
-            background-color: rgba(255, 255, 255, 0.2);
-        }
-        .app-layout {
-            display: flex;
-            gap: 20px;
-            flex-wrap: wrap;
-        }
-        .sidebar {
-            flex: 0 0 300px;
+        .card {
             background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-        }
-        .sidebar-header {
-            background-color: #f0f0f0;
-            padding: 15px 20px;
-            border-bottom: 1px solid #ddd;
-        }
-        .sidebar-body {
-            padding: 15px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            padding: 20px;
         }
         .document-list {
-            max-height: 500px;
-            overflow-y: auto;
+            margin-bottom: 20px;
         }
         .document-item {
-            padding: 8px 5px;
-            display: flex;
-            align-items: center;
+            margin-bottom: 5px;
         }
-        .chat-container {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            min-width: 300px;
-            min-height: 600px;
+        .query-section {
+            margin-top: 20px;
         }
         .chat-messages {
-            flex: 1;
-            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 10px;
+            height: 300px;
             overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-            max-height: 500px;
-        }
-        .empty-chat {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #777;
-            text-align: center;
-            padding: 20px;
-        }
-        .message {
-            padding: 12px 15px;
-            border-radius: 8px;
-            max-width: 80%;
+            margin-bottom: 15px;
+            background-color: #f9f9f9;
         }
         .query-message {
-            align-self: flex-end;
             background-color: #e6f2ff;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            text-align: right;
         }
         .response-message {
-            align-self: flex-start;
             background-color: #f0f0f0;
-        }
-        .chat-input {
-            padding: 15px 20px;
-            border-top: 1px solid #ddd;
-            display: flex;
-            gap: 10px;
-        }
-        .chat-input input {
-            flex: 1;
-            padding: 10px 15px;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            outline: none;
-        }
-        .chat-input input:focus {
-            border-color: #4a6fa5;
-        }
-        .chat-input button {
-            background-color: #4a6fa5;
-            color: white;
-            border: none;
-            padding: 0 15px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .chat-input button:hover {
-            background-color: #3a5985;
-        }
-        .chat-input button:disabled {
-            background-color: #aaa;
-            cursor: not-allowed;
-        }
-        .loading {
-            text-align: center;
-            padding: 20px;
-            color: #777;
-        }
-        .checkbox-item {
-            margin-bottom: 8px;
-        }
-        .select-all {
+            padding: 10px;
+            border-radius: 5px;
             margin-bottom: 10px;
-            padding-bottom: 10px;
-            border-bottom: 1px solid #eee;
+        }
+        .query-input {
+            width: 80%;
+            padding: 8px;
+            margin-right: 10px;
         }
     </style>
 </head>
@@ -173,226 +90,185 @@
     <div class="container">
         <h2>Query Documents</h2>
         
-        <div class="app-layout">
-            <div class="sidebar">
-                <div class="sidebar-header">
-                    <h3 style="margin: 0;">Documents</h3>
-                </div>
-                <div class="sidebar-body">
-                    <div id="documentList">
-                        <div id="loadingDocuments" class="loading">
-                            Loading documents...
-                        </div>
-                        <div class="select-all" id="selectAllContainer" style="display: none;">
-                            <label class="checkbox-item">
-                                <input type="checkbox" id="selectAll" checked>
-                                Select All
-                            </label>
-                        </div>
-                        <div class="document-list" id="documentListItems">
-                            <!-- Documents will be loaded here -->
-                        </div>
-                        <div id="noDocuments" style="display: none;">
-                            No documents found. Please upload some documents first.
-                        </div>
-                    </div>
-                </div>
+        <div class="card">
+            <h3>Documents</h3>
+            <div id="loadingMessage">Loading documents...</div>
+            <div id="documentList" class="document-list" style="display: none;">
+                <!-- Documents will be listed here -->
+            </div>
+            <div id="noDocuments" style="display: none;">
+                <p>No documents found. Please upload documents first.</p>
+                <a href="/upload/">Go to Upload</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>Ask Questions</h3>
+            <div class="chat-messages" id="chatMessages">
+                <div id="welcomeMessage">Select documents and ask questions about them.</div>
+                <!-- Messages will appear here -->
             </div>
             
-            <div class="chat-container">
-                <div id="chatMessages" class="chat-messages">
-                    <div id="emptyChat" class="empty-chat">
-                        <p>Select documents from the sidebar and ask questions about their content.</p>
-                    </div>
-                    <!-- Chat messages will appear here -->
-                </div>
-                <div id="loadingResponse" class="loading" style="display: none;">
-                    Processing your query...
-                </div>
-                <div class="chat-input">
-                    <input type="text" id="queryInput" placeholder="Ask a question about your documents...">
-                    <button id="sendButton" disabled>Send</button>
-                </div>
+            <div class="query-section">
+                <input type="text" id="queryInput" class="query-input" placeholder="Type your question here...">
+                <button id="queryButton" disabled>Send</button>
             </div>
         </div>
     </div>
     
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const documentListItems = document.getElementById('documentListItems');
-            const loadingDocuments = document.getElementById('loadingDocuments');
+            const loadingMessage = document.getElementById('loadingMessage');
+            const documentList = document.getElementById('documentList');
             const noDocuments = document.getElementById('noDocuments');
-            const selectAllContainer = document.getElementById('selectAllContainer');
-            const selectAllCheckbox = document.getElementById('selectAll');
             const chatMessages = document.getElementById('chatMessages');
-            const emptyChat = document.getElementById('emptyChat');
             const queryInput = document.getElementById('queryInput');
-            const sendButton = document.getElementById('sendButton');
-            const loadingResponse = document.getElementById('loadingResponse');
+            const queryButton = document.getElementById('queryButton');
             
             // Fetch documents
-            function fetchDocuments() {
-                loadingDocuments.style.display = 'block';
-                documentListItems.innerHTML = '';
-                noDocuments.style.display = 'none';
-                selectAllContainer.style.display = 'none';
-                
-                fetch('/api/documents/')
-                    .then(response => response.json())
-                    .then(data => {
-                        loadingDocuments.style.display = 'none';
+            fetch('/api/documents/')
+                .then(response => response.json())
+                .then(data => {
+                    loadingMessage.style.display = 'none';
+                    
+                    if (data.success && data.documents && data.documents.length > 0) {
+                        // Create document checkboxes
+                        data.documents.forEach(doc => {
+                            const docItem = document.createElement('div');
+                            docItem.className = 'document-item';
+                            docItem.innerHTML = `
+                                <label>
+                                    <input type="checkbox" class="document-checkbox" value="${doc}"> ${doc}
+                                </label>
+                            `;
+                            documentList.appendChild(docItem);
+                        });
                         
-                        if (data.success && data.documents && data.documents.length > 0) {
-                            data.documents.forEach((doc, index) => {
-                                const item = document.createElement('label');
-                                item.className = 'checkbox-item document-item';
-                                item.innerHTML = `
-                                    <input type="checkbox" class="document-checkbox" value="${doc}" checked>
-                                    ${doc}
-                                `;
-                                documentListItems.appendChild(item);
+                        // Add select all option
+                        const selectAllItem = document.createElement('div');
+                        selectAllItem.className = 'document-item';
+                        selectAllItem.innerHTML = `
+                            <label><input type="checkbox" id="selectAll"> <strong>Select All</strong></label>
+                        `;
+                        documentList.insertBefore(selectAllItem, documentList.firstChild);
+                        
+                        // Set up event handlers for checkboxes
+                        const selectAllCheckbox = document.getElementById('selectAll');
+                        const documentCheckboxes = document.querySelectorAll('.document-checkbox');
+                        
+                        selectAllCheckbox.addEventListener('change', function() {
+                            documentCheckboxes.forEach(checkbox => {
+                                checkbox.checked = selectAllCheckbox.checked;
                             });
-                            
-                            selectAllContainer.style.display = 'block';
-                            updateSendButtonState();
-                            setupCheckboxListeners();
-                        } else {
-                            noDocuments.style.display = 'block';
-                        }
-                    })
-                    .catch(error => {
-                        loadingDocuments.style.display = 'none';
+                            updateQueryButtonState();
+                        });
+                        
+                        documentCheckboxes.forEach(checkbox => {
+                            checkbox.addEventListener('change', updateQueryButtonState);
+                        });
+                        
+                        documentList.style.display = 'block';
+                    } else {
                         noDocuments.style.display = 'block';
-                        noDocuments.textContent = 'Error loading documents.';
-                        console.error('Error fetching documents:', error);
-                    });
-            }
-            
-            // Setup checkbox listeners
-            function setupCheckboxListeners() {
-                const documentCheckboxes = document.querySelectorAll('.document-checkbox');
-                
-                // Select all functionality
-                selectAllCheckbox.addEventListener('change', function() {
-                    documentCheckboxes.forEach(checkbox => {
-                        checkbox.checked = selectAllCheckbox.checked;
-                    });
-                    updateSendButtonState();
+                    }
+                })
+                .catch(error => {
+                    loadingMessage.style.display = 'none';
+                    noDocuments.style.display = 'block';
+                    console.error('Error fetching documents:', error);
                 });
-                
-                // Individual checkbox change
-                documentCheckboxes.forEach(checkbox => {
-                    checkbox.addEventListener('change', function() {
-                        updateSelectAllCheckbox();
-                        updateSendButtonState();
-                    });
-                });
+            
+            // Update query button state based on checkboxes
+            function updateQueryButtonState() {
+                const anyChecked = document.querySelector('.document-checkbox:checked');
+                queryButton.disabled = !anyChecked;
             }
             
-            // Update select all checkbox based on individual selections
-            function updateSelectAllCheckbox() {
-                const documentCheckboxes = document.querySelectorAll('.document-checkbox');
-                const checkedCount = document.querySelectorAll('.document-checkbox:checked').length;
-                
-                if (checkedCount === 0) {
-                    selectAllCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = false;
-                } else if (checkedCount === documentCheckboxes.length) {
-                    selectAllCheckbox.checked = true;
-                    selectAllCheckbox.indeterminate = false;
-                } else {
-                    selectAllCheckbox.indeterminate = true;
-                }
-            }
-            
-            // Update send button state based on checkbox selections
-            function updateSendButtonState() {
-                const checkedCount = document.querySelectorAll('.document-checkbox:checked').length;
-                sendButton.disabled = checkedCount === 0;
-            }
-            
-            // Send query
-            sendButton.addEventListener('click', function() {
+            // Handle query submission
+            queryButton.addEventListener('click', function() {
                 const query = queryInput.value.trim();
-                if (query === '') return;
+                if (!query) return;
                 
                 // Get selected documents
-                const selectedDocuments = [];
+                const selectedDocs = [];
                 document.querySelectorAll('.document-checkbox:checked').forEach(checkbox => {
-                    selectedDocuments.push(checkbox.value);
+                    selectedDocs.push(checkbox.value);
                 });
                 
                 // Show query in chat
-                emptyChat.style.display = 'none';
-                const queryMessageElement = document.createElement('div');
-                queryMessageElement.className = 'message query-message';
-                queryMessageElement.textContent = query;
-                chatMessages.appendChild(queryMessageElement);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                const queryMessageDiv = document.createElement('div');
+                queryMessageDiv.className = 'query-message';
+                queryMessageDiv.textContent = query;
+                chatMessages.appendChild(queryMessageDiv);
                 
                 // Clear input
                 queryInput.value = '';
+                queryButton.disabled = true;
                 
-                // Show loading
-                loadingResponse.style.display = 'block';
-                sendButton.disabled = true;
+                // Show loading message
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'response-message';
+                loadingDiv.textContent = 'Loading...';
+                chatMessages.appendChild(loadingDiv);
                 
-                // Send query to API
+                // Scroll to bottom
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+                
+                // Send query to server
                 fetch('/api/query/', {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         query: query,
-                        document_names: selectedDocuments
-                    }),
+                        document_names: selectedDocs
+                    })
                 })
                 .then(response => response.json())
                 .then(data => {
-                    loadingResponse.style.display = 'none';
+                    // Remove loading message
+                    chatMessages.removeChild(loadingDiv);
                     
-                    // Show response in chat
-                    const responseMessageElement = document.createElement('div');
-                    responseMessageElement.className = 'message response-message';
+                    // Show response
+                    const responseDiv = document.createElement('div');
+                    responseDiv.className = 'response-message';
                     
                     if (data.success) {
-                        responseMessageElement.textContent = data.response;
+                        responseDiv.textContent = data.response;
                     } else {
-                        responseMessageElement.textContent = 'Error: ' + (data.message || 'Failed to get response');
-                        responseMessageElement.style.color = '#d32f2f';
+                        responseDiv.textContent = 'Error: ' + data.message;
+                        responseDiv.style.color = 'red';
                     }
                     
-                    chatMessages.appendChild(responseMessageElement);
+                    chatMessages.appendChild(responseDiv);
                     chatMessages.scrollTop = chatMessages.scrollHeight;
-                    updateSendButtonState();
+                    
+                    // Re-enable button
+                    updateQueryButtonState();
                 })
                 .catch(error => {
-                    loadingResponse.style.display = 'none';
+                    // Remove loading message
+                    chatMessages.removeChild(loadingDiv);
                     
-                    const errorMessageElement = document.createElement('div');
-                    errorMessageElement.className = 'message response-message';
-                    errorMessageElement.textContent = 'Network error. Please try again.';
-                    errorMessageElement.style.color = '#d32f2f';
+                    // Show error
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'response-message';
+                    errorDiv.textContent = 'Error communicating with server';
+                    errorDiv.style.color = 'red';
+                    chatMessages.appendChild(errorDiv);
                     
-                    chatMessages.appendChild(errorMessageElement);
-                    chatMessages.scrollTop = chatMessages.scrollHeight;
-                    updateSendButtonState();
-                    
-                    console.error('Error querying:', error);
+                    console.error('Error:', error);
+                    updateQueryButtonState();
                 });
             });
             
-            // Allow sending with Enter key
+            // Allow Enter key to submit
             queryInput.addEventListener('keypress', function(e) {
-                if (e.key === 'Enter' && !sendButton.disabled) {
-                    sendButton.click();
-                    e.preventDefault();
+                if (e.key === 'Enter' && !queryButton.disabled) {
+                    queryButton.click();
                 }
             });
-            
-            // Initial fetch
-            fetchDocuments();
         });
     </script>
 </body>
